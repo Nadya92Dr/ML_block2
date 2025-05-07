@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/0/5f9a3fa683bb49f3a2d6af73d06dfb0e/artifacts
+end_time: 1746616888778
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5f9a3fa683bb49f3a2d6af73d06dfb0e
+run_name: DecisionTree_depth_5_crit_entropy
+run_uuid: 5f9a3fa683bb49f3a2d6af73d06dfb0e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746616885251
+status: 3
+tags: []
+user_id: User
