@@ -16,10 +16,9 @@ from config import config
 
 
 def load_data():
+    import pandas as pd
 
-    data = get_data()
-    print("Данные о вине успешно загружены.")
-    return data
+    return pd.read_csv("data/winequality-red.csv")
 
 
 def train_model(**kwargs):
