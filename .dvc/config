@@ -1,0 +1,6 @@
+[core]
+    remote = my_s3_bucket
+['remote "my_s3_bucket"']
+    url = s3://krutych
+    use_ssl = false
+    endpointurl = http://89.223.69.137:9000
