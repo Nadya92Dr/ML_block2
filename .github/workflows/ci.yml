@@ -1,0 +1,68 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  MY_USER: melodiedivine@gmail.com
+  MY_PASSWORD: 123456
+
+  
+jobs:
+  greet:
+    name: Greeting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say Hello
+        run: |
+          echo "Hello! My name is ${{ secrets.USER_EMAIL }}."
+          echo "My password is ${{ secrets.USER_PASSWORD }}."
+
+  lint:
+    name: Lint (flake8)
+    runs-on: ubuntu-latest
+    needs: greet
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Install flake8
+        run: pip install flake8
+      - name: Run flake8
+        run: flake8 .
+
+  unit_tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run unit tests
+        run: pytest tests/unit --maxfail=1 --disable-warnings -q
+
+  integration_tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit_tests
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Install dependencies & DVC
+        run: |
+          pip install -r requirements.txt
+          pip install dvc
+      - name: Pull model artifact
+        run: dvc pull models/wine_quality_model.pkl
+      - name: Run integration tests
+        run: pytest tests/integration --maxfail=1 --disable-warnings -q

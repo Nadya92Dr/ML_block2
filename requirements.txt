@@ -1,2 +1,6 @@
 scikit-learn~=1.4.1
 dvc_s3-3.2.0
+fastapi==0.109.0
+uvicorn==0.26.0
+httpx==0.26.0
+pytest==7.4.4
