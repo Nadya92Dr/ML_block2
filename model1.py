@@ -82,3 +82,4 @@ if __name__ == "__main__":
 
         os.makedirs("models", exist_ok=True)
         dump(trained_model, "models/wine_quality_model.pkl")
+print(">>> Модель сохранена в models/wine_quality_model.pkl")
