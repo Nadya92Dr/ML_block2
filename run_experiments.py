@@ -1,6 +1,6 @@
 import mlflow
 import os
-from joblib import dump
+
 
 os.makedirs("models", exist_ok=True)
 mlflow.set_tracking_uri("http://localhost:5000")

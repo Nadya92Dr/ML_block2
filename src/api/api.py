@@ -4,10 +4,9 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import pandas as pd
 import uvicorn
-import subprocess
+
 
 from mlflow.tracking import MlflowClient
-import mlflow.sklearn
 
 
 app = FastAPI(title="Wine Quality Prediction API")
