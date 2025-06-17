@@ -1,5 +1,9 @@
 import mlflow
 
+import os
+from joblib import dump
+
+os.makedirs("models", exist_ok=True)
 mlflow.set_tracking_uri("http://localhost:5000")
 import mlflow.sklearn
 from sklearn.linear_model import LogisticRegression
@@ -64,6 +68,10 @@ if __name__ == "__main__":
             penalty=config["logistic_regression"].get("penalty", "l2"),
             random_state=config["random_state"],
         )
+        trained_model = train(...)
+        metrics = test(...)
+
+        mlflow.sklearn.log_model(trained_model, "model")
 
         data = get_data()
         trained_model = train(
@@ -71,3 +79,6 @@ if __name__ == "__main__":
         )
         metrics = test(trained_model, data["x_test"], data["y_test"])
         mlflow.sklearn.log_model(trained_model, "model")
+
+        os.makedirs("models", exist_ok=True)
+        dump(trained_model, "models/wine_quality_model.pkl")
