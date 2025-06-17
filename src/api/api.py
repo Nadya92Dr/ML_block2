@@ -1,10 +1,14 @@
+import os
+import joblib
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import pandas as pd
 import uvicorn
-import joblib
-import os
 import subprocess
+
+from mlflow.tracking import MlflowClient
+import mlflow.sklearn
+
 
 app = FastAPI(title="Wine Quality Prediction API")
 
@@ -30,50 +34,46 @@ model_info_data = {}
 def load_model():
 
     global model, model_info_data
-    model_path = "models/wine_quality_model.pkl"
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:8080")
+    run_id = os.getenv("MLFLOW_RUN_ID", "f8d61fe1e48847b89207b2c59163af32")
 
-    try:
-        subprocess.run(["dvc", "pull", model_path], check=True)
-    except Exception as e:
-        print("Ошибка при выполнении dvc pull:", e)
+    client = MlflowClient(tracking_uri=tracking_uri)
+    dst = "models/mlflow_model"
+    os.makedirs(dst, exist_ok=True)
+    client.download_artifacts(run_id, artifact_path="model", dst_path=dst)
 
+    model_path = os.path.join(dst, "model.pkl")
     if not os.path.exists(model_path):
-        print(f"Файл модели не найден по пути {model_path}")
-        model = None
-        return
 
-    try:
-        model = joblib.load(model_path)
+        raise RuntimeError(f"Не найден файл модели по пути {model_path}")
+    model = joblib.load(model_path)
 
-        test_data = pd.DataFrame(
-            [
-                {
-                    "fixed_acidity": 7.4,
-                    "volatile_acidity": 0.7,
-                    "citric_acid": 0.0,
-                    "residual_sugar": 1.9,
-                    "chlorides": 0.076,
-                    "free_sulfur_dioxide": 11,
-                    "total_sulfur_dioxide": 34,
-                    "density": 0.9978,
-                    "pH": 3.51,
-                    "sulphates": 0.56,
-                    "alcohol": 9.4,
-                }
-            ]
-        )
-        prediction = model.predict(test_data)[0]
-        print("Модель успешно загружена. Тестовое предсказание:", prediction)
+    test_data = pd.DataFrame(
+        [
+            {
+                "fixed_acidity": 7.4,
+                "volatile_acidity": 0.7,
+                "citric_acid": 0.0,
+                "residual_sugar": 1.9,
+                "chlorides": 0.076,
+                "free_sulfur_dioxide": 11,
+                "total_sulfur_dioxide": 34,
+                "density": 0.9978,
+                "pH": 3.51,
+                "sulphates": 0.56,
+                "alcohol": 9.4,
+            }
+        ]
+    )
+    prediction = model.predict(test_data)[0]
+    print("Модель успешно загружена. Тестовое предсказание:", prediction)
 
-        model_info_data = {
-            "model_name": "Wine Quality Prediction Model",
-            "version": "latest",
-            "test_prediction": float(prediction),
-            "metrics": {"accuracy": None, "r2_score": None},
-        }
-    except Exception as e:
-        print("Ошибка при загрузке модели:", e)
-        model = None
+    model_info_data = {
+        "model_name": "Wine Quality Prediction Model",
+        "version": "latest",
+        "test_prediction": float(prediction),
+        "metrics": {"accuracy": None, "r2_score": None},
+    }
 
 
 @app.on_event("startup")
