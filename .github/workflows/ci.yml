@@ -10,7 +10,7 @@ env:
   MY_USER: melodiedivine@gmail.com
   MY_PASSWORD: 123456
 
-  
+
 jobs:
   greet:
     name: Greeting
@@ -44,6 +44,8 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.8'
+      - name: Check package versions
+        run: pip index versions scikit-learn
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run unit tests
