@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1750189472619
+current_stage: None
+description: ''
+last_updated_timestamp: 1750189472619
+name: Trained_model
+run_id: f8d61fe1e48847b89207b2c59163af32
+run_link: ''
+source: mlflow-artifacts:/0/f8d61fe1e48847b89207b2c59163af32/artifacts/model
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/0/f8d61fe1e48847b89207b2c59163af32/artifacts/model
+user_id: null
+version: 1
