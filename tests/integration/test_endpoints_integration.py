@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
-import api
+import api.api as api_mod
+from api import app
 
 
 class DummyModel:
@@ -10,10 +11,10 @@ class DummyModel:
 
 @pytest.fixture(autouse=True)
 def inject_dummy_model(monkeypatch):
-    monkeypatch.setattr(api, "load_model", lambda: None)
-    monkeypatch.setattr(api, "model", DummyModel())
+    monkeypatch.setattr(api_mod, "load_model", lambda: None)
+    monkeypatch.setattr(api_mod, "model", DummyModel())
     monkeypatch.setattr(
-        api,
+        api_mod,
         "model_info_data",
         {
             "model_name": "DummyModel",
@@ -26,19 +27,19 @@ def inject_dummy_model(monkeypatch):
 
 @pytest.fixture
 def client():
-    return TestClient(api.app)
+    return TestClient(app)
 
 
 def test_health_ok(client):
-    resp = client.get("/health")
-    assert resp.status_code == 200
-    assert resp.json() == {"status": "ok"}
+    res = client.get("/health")
+    assert res.status_code == 200
+    assert res.json() == {"status": "ok"}
 
 
 def test_model_info(client):
-    resp = client.get("/model-info")
-    assert resp.status_code == 200
-    body = resp.json()
+    res = client.get("/model-info")
+    assert res.status_code == 200
+    body = res.json()
     assert body["model_name"] == "DummyModel"
     assert body["version"] == "test"
     assert body["test_prediction"] == 42.0
@@ -58,7 +59,6 @@ def test_predict(client):
         "sulphates": 0.56,
         "alcohol": 9.4,
     }
-    resp = client.post("/predict", json=payload)
-    assert resp.status_code == 200
-
-    assert resp.json() == {"predicted_quality": 42.0}
+    res = client.post("/predict", json=payload)
+    assert res.status_code == 200
+    assert res.json() == {"predicted_quality": 42.0}
