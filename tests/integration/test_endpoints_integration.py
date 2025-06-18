@@ -1,31 +1,50 @@
+import pytest
 from fastapi.testclient import TestClient
-from api import app
-
-client = TestClient(app)
+import api
 
 
-def test_health_ok():
-
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+class DummyModel:
+    def predict(self, df):
+        return [42]
 
 
-def test_model_info_structure():
+@pytest.fixture(autouse=True)
+def inject_dummy_model(monkeypatch):
+    monkeypatch.setattr(api, "load_model", lambda: None)
+    monkeypatch.setattr(api, "model", DummyModel())
+    monkeypatch.setattr(
+        api,
+        "model_info_data",
+        {
+            "model_name": "DummyModel",
+            "version": "test",
+            "test_prediction": 42.0,
+            "metrics": {"accuracy": None, "r2_score": None},
+        },
+    )
 
-    response = client.get("/model-info")
-    assert response.status_code == 200
 
-    json_data = response.json()
-
-    assert "model_name" in json_data
-    assert "version" in json_data
-    assert "test_prediction" in json_data
-    assert isinstance(json_data["metrics"], dict)
+@pytest.fixture
+def client():
+    return TestClient(api.app)
 
 
-def test_predict_valid_input():
+def test_health_ok(client):
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok"}
 
+
+def test_model_info(client):
+    resp = client.get("/model-info")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["model_name"] == "DummyModel"
+    assert body["version"] == "test"
+    assert body["test_prediction"] == 42.0
+
+
+def test_predict(client):
     payload = {
         "fixed_acidity": 7.4,
         "volatile_acidity": 0.7,
@@ -39,10 +58,7 @@ def test_predict_valid_input():
         "sulphates": 0.56,
         "alcohol": 9.4,
     }
-    response = client.post("/predict", json=payload)
-    assert response.status_code == 200
+    resp = client.post("/predict", json=payload)
+    assert resp.status_code == 200
 
-    result = response.json()
-    assert "predicted_quality" in result
-
-    assert isinstance(result["predicted_quality"], float)
+    assert resp.json() == {"predicted_quality": 42.0}
